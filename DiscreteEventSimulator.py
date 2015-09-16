@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# This code is a slight variation of the code from user http://codereview.stackexchange.com/users/5583/garetjax
+# http://codereview.stackexchange.com/questions/3670/discrete-event-simulation-with-variable-intervals
 
 import heapq
 
