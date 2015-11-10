@@ -5,6 +5,15 @@
 import heapq
 
 
+class CustomList(list):
+    "list that sorts only on first element"
+    "If the list elements used to store the event paramters"
+    "are compared and the only differing element is the a function"
+    "an error is thrown as fucntions can't be compared"
+    def __lt__(self, other):
+        return self[0] < other[0]
+
+
 class Simulator(object):
 
     def __init__(self):
@@ -21,8 +30,12 @@ class Simulator(object):
         Returns an object which can be used to reschedule the event.
         """
         assert time >= self.time
-        event = [time, True, callback, args, kwargs]
-        heapq.heappush(self.queue, event)
+        event = CustomList([time, True, callback, args, kwargs])
+        try:
+            heapq.heappush(self.queue, event)
+        except TypeError:
+            print(event)
+            raise
         return event
 
     def reschedule(self, event, time):
