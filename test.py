@@ -73,7 +73,7 @@ StockOnHand = 50
 WeeksToSimulate = 100
 secondsPerWeek = 7 * 24 * 60 * 60
 
-simulationPeriod = WeeksToSimulate * secondsPerWeek
+simulationPeriod = WeeksToSimulate *   secondsPerWeek
 
 
 # Perform Simulation
