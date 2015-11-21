@@ -3,6 +3,7 @@ import random
 import math
 import sqlite3
 import numpy
+import piece_wise
 import matplotlib.pyplot as plt
 import retail_analyser as ra
 
@@ -59,8 +60,6 @@ def customer(simulator, database):
     if (StockOnHand < 0):
         StockOnHand = 0
     currentTime = simulator.time
-    timeToNextCustomer = int(random.expovariate(0.0004))
-    simulator.schedule(currentTime + timeToNextCustomer, customer, simulator, database)
     log_SOH(currentTime, StockOnHand, database)
 
 
@@ -73,7 +72,27 @@ StockOnHand = 50
 WeeksToSimulate = 100
 secondsPerWeek = 7 * 24 * 60 * 60
 
-simulationPeriod = WeeksToSimulate *   secondsPerWeek
+simulationPeriod = WeeksToSimulate * secondsPerWeek
+
+salesData = numpy.array([[(0 * 24 + 0) * 3600, 0],
+                         [(0 * 24 + 8) * 3600, 0],
+                         [(0 * 24 + 21) * 3600, 3000],
+                         [(1 * 24 + 8) * 3600, 3000],
+                         [(1 * 24 + 21) * 3600, 6000],
+                         [(2 * 24 + 8) * 3600, 6000],
+                         [(2 * 24 + 21) * 3600, 9000],
+                         [(3 * 24 + 8) * 3600, 9000],
+                         [(3 * 24 + 21) * 3600, 12000],
+                         [(4 * 24 + 8) * 3600, 12000],
+                         [(4 * 24 + 21) * 3600, 15000],
+                         [(5 * 24 + 8) * 3600, 15000],
+                         [(5 * 24 + 17) * 3600, 22500],
+                         [(6 * 24 + 9) * 3600, 22500],
+                         [(6 * 24 + 18) * 3600, 30000],
+                         [(6 * 24 + 24) * 3600, 30000],
+                         ])
+
+salesProfile = piece_wise.function(salesData)
 
 
 # Perform Simulation
@@ -81,7 +100,24 @@ s = DiscreteEventSimulator.Simulator()
 for orderNumber in range(0, WeeksToSimulate*7):
     s.schedule(3600 + orderNumber * 86400, order, s, database)
 
-s.schedule(0, customer, s, database)
+
+
+dollars = 0
+dollarsPerWeek = 30000
+averageDollarsPerCustomer = 200
+
+while (dollars < WeeksToSimulate * dollarsPerWeek):
+
+    weeks = numpy.modf(dollars /dollarsPerWeek)
+    secondsIntoWeek = salesProfile.interpolate(weeks[0] * dollarsPerWeek, invert=True)
+    totalTime = weeks[1] * secondsPerWeek + secondsIntoWeek
+
+    customerArrivalTime = totalTime  #secondsPerWeek * (dollars/dollarsPerWeek)
+
+    s.schedule(customerArrivalTime, customer, s, database)
+    dollarsToNextCustomer = int(random.expovariate(1/averageDollarsPerCustomer))
+    dollars += dollarsToNextCustomer
+
 
 s.run(simulationPeriod)
 
